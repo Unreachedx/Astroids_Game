@@ -1,12 +1,15 @@
+import sys
 import pygame
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from constants import *
+from shot import Shot
 
 updateable_group = pygame.sprite.Group()
 drawable_group = pygame.sprite.Group()
 asteroids_group = pygame.sprite.Group()
+shot_group = pygame.sprite.Group()
 
 def main():
     pygame.init()
@@ -21,6 +24,7 @@ def main():
     asteroid_field = AsteroidField()
 
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    player.shots = shot_group
 
     while True:  # Infinite loop!
         for event in pygame.event.get():
@@ -30,9 +34,20 @@ def main():
 
         screen.fill((0, 0, 0))  # Fill the screen with black
         updateable_group.update(dt)
+        for asteroid in asteroids_group:
+            if asteroid.collision(player):
+                print("Game over!")
+                sys.exit()
+        for asteroid in asteroids_group:
+            for bullet in shot_group:
+                if asteroid.collision(bullet):
+                    asteroid.kill()
+                    bullet.kill()
         for sprite in drawable_group:
             sprite.draw(screen)
-        
+        shot_group.update(dt)
+        for shot in shot_group:
+            shot.draw(screen)
 
         pygame.display.flip()  # Update the display
         dt = clock.tick(60) / 1000  # Get delta time in seconds
